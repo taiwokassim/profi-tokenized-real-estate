@@ -69,5 +69,5 @@ taiwokassim03@gmail.com
 github.com/taiwokassim
 https://t.me/taiwo_kassim
 
-- Twitter: [@taiwokassim](https://twitter.com/taiwokassim)
-- Email: kassimtaiwo99@gmail.com
+- Twitter: [@t_kazz9](https://twitter.com/t_kazz9)
+- Email: taiwokassim03@gmail.com
