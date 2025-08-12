@@ -1,48 +1,37 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, MintTo};
 
-// Replace with your deployed program ID
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkgVh9r7v6v7P");
 
 #[program]
 pub mod propfi {
     use super::*;
 
-    /// Initialize a new property with its own SPL Token Mint.
     pub fn initialize_property(
         ctx: Context<InitializeProperty>,
         total_shares: u64
     ) -> Result<()> {
         let property = &mut ctx.accounts.property;
-
-        // Save owner and shares
         property.owner = *ctx.accounts.owner.key;
         property.total_shares = total_shares;
         property.available_shares = total_shares;
         property.rent_pool = 0;
         property.bump = *ctx.bumps.get("property").unwrap();
-
-        // Store mint address for future reference
         property.share_mint = ctx.accounts.share_mint.key();
-
         Ok(())
     }
 
-    /// Buy shares: decreases available shares & mints tokens to buyer
     pub fn buy_shares(ctx: Context<BuyShares>, amount: u64) -> Result<()> {
         let property = &mut ctx.accounts.property;
-
         require!(
             amount <= property.available_shares,
             CustomError::NotEnoughShares
         );
-
         property.available_shares = property
             .available_shares
             .checked_sub(amount)
             .ok_or(CustomError::MathError)?;
 
-        // Mint tokens representing shares to buyer's ATA
         token::mint_to(
             CpiContext::new_with_signer(
                 ctx.accounts.token_program.to_account_info(),
@@ -75,9 +64,6 @@ pub mod propfi {
     }
 }
 
-//
-// ---------------------- ACCOUNTS ----------------------
-//
 #[derive(Accounts)]
 pub struct InitializeProperty<'info> {
     #[account(
@@ -92,7 +78,7 @@ pub struct InitializeProperty<'info> {
     #[account(
         init,
         payer = owner,
-        mint::decimals = 0, // 1 token = 1 share
+        mint::decimals = 0,
         mint::authority = property
     )]
     pub share_mint: Account<'info, Mint>,
@@ -152,25 +138,19 @@ pub struct DistributeRent<'info> {
     pub owner: Signer<'info>,
 }
 
-//
-// ---------------------- STATE ----------------------
-//
 #[account]
 pub struct Property {
-    pub owner: Pubkey,         // 32
-    pub total_shares: u64,     // 8
-    pub available_shares: u64, // 8
-    pub rent_pool: u64,        // 8
-    pub share_mint: Pubkey,    // 32
-    pub bump: u8,              // 1
+    pub owner: Pubkey,
+    pub total_shares: u64,
+    pub available_shares: u64,
+    pub rent_pool: u64,
+    pub share_mint: Pubkey,
+    pub bump: u8,
 }
 impl Property {
     pub const LEN: usize = 32 + 8 + 8 + 8 + 32 + 1;
 }
 
-//
-// ---------------------- ERRORS ----------------------
-//
 #[error_code]
 pub enum CustomError {
     #[msg("Not enough shares available")]

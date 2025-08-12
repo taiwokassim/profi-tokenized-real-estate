@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "programs/propfi"
+]
+
+[profile.release]
+overflow-checks = true
